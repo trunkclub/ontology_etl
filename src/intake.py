@@ -1,28 +1,35 @@
 """
 First pass at ETL ingestion
+
+The goal of `intake.py` is to define classes and methods for taking
+raw data sources, loading them, and serializing them.
+
+The serialized forms of these will be sent to constructors for the
+appropriate entity classes.
 """
 
-import os
 import yaml
 import json
+from Queue import Queue
 from watchdog.observers import Observer
 from watchdog.events import (
-    LoggingEventHandler, RegexMatchingEventHandler, FileCreatedEvent)
+    LoggingEventHandler, RegexMatchingEventHandler, FileCreatedEvent,
+    FileModifiedEvent)
+from global_configs import *
 
 
-BASE_DIR = os.environ['BASE_DIR']
-CONFIG_DIR = os.environ['CONFIG_DIR']
-DATA_SOURCES_DIR = os.environ['DATA_SOURCES_DIR']
-TRANSFORMS_DIR = os.environ['TRANSFORMS_DIR']
-ENTITIES_DIR = os.environ['ENTITIES_DIR']
-SNIPPETS_DIR = os.environ['SNIPPETS_DIR']
-SRC_DIR = os.environ['SRC_DIR']
+
+class QueuedData(object):
+
+    def __init__(self, payload, origin):
+        self.payload = payload
+        self.origin = origin
 
 
 class DataSource(object):
 
-    def __init__(self, name=None):
-        self.name = name
+    def __init__(self):
+        self.output_queue = Queue()
 
     def start(self):
         raise Exception('`start` method should be overridden by child class.')
@@ -40,7 +47,7 @@ class FileSource(DataSource):
         self.directory = directory
         super(FileSource, self).__init__()
     
-    def run_watchdog(self):
+    def start(self):
         """
         Starts watchdog thread to monitor for incoming files. Calls the
         child class's `read` method when a new file appears.
@@ -52,6 +59,7 @@ class FileSource(DataSource):
             ignore_directories=False,
             case_sensitive=False)
         event_handler.on_created = self.read  # Call child's `read` method
+        event_handler.on_modified = self.read
         watch_path = self.directory
         observer = Observer()
         observer.schedule(event_handler, watch_path, recursive=False)
@@ -73,19 +81,24 @@ class FileSource(DataSource):
 
 class JSONFileSource(FileSource):
     """
-    Class for ingesting CSV files -- serializes them by row, to be transformed
-    into the intermediate representation downstream.
+    Class for ingesting JSON files
     """
 
-    def __init__(self, dialect=None):
-        self.dialect = dialect
-        super(JSONFileSource, self).__init__()
+    def __init__(self, *args, **kwargs):
+        super(JSONFileSource, self).__init__(*args, **kwargs)
 
     def read(self, path):
         """
         Read the incoming file and load it as JSON object.
         """
-
+        if isinstance(path, (FileCreatedEvent, FileModifiedEvent,)):
+            path = path.src_path
         with open(path, 'r') as incoming_file:
             incoming = json.load(incoming_file)
-        return incoming
+        incoming = QueuedData(incoming, self)
+        self.output_queue.put(incoming)
+
+
+if __name__ == '__main__':
+    json_file_source = JSONFileSource(directory=DATA_SOURCES_DIR)
+

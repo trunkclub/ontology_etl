@@ -1,0 +1,17 @@
+Person:
+  sources:
+    json_file_source_test:
+      - transform: test_transform
+      - snippet: test_snippet
+  attributes:
+    name:
+      type: str
+      required: True
+      sources:
+      - json_file_source_test: name
+    age:
+      type: int
+      required: False
+      sources:
+      - json_file_source_test: age
+      

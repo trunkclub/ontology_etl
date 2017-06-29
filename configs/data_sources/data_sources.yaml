@@ -1,0 +1,3 @@
+test_json_file_source:
+  source_type: JSONFileSource
+  directory: /home/vagrant/trunk/ontology_etl/intake_sample_directory
