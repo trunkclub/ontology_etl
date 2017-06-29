@@ -1,7 +1,0 @@
-data_sources:
-  parquet_file_source:
-    directory: ..
-    source_type: file
-  some_csv_source:
-    directory: .
-    source_type: file

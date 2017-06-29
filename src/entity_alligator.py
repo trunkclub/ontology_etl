@@ -3,6 +3,9 @@ This aggregates data from the various `DataSource`s and directs them
 to the proper `Entity` classes to be instantiated.
 """
 
+from Queue import Queue
+
+
 class Alligator(object):
     """
     Steps:
@@ -14,4 +17,8 @@ class Alligator(object):
     """
 
     def __init__(self):
-        pass
+        self.input_queue = Queue.Queue()
+
+    def attach_data_source(self, data_source):
+        self.input_queues.append(data_source.output_queue)
+        

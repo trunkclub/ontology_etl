@@ -29,7 +29,39 @@ class QueuedData(object):
 class DataSource(object):
 
     def __init__(self):
-        self.output_queue = Queue()
+
+        class MissingQueue(object):
+            """
+            This is a dummy class whose only purpose is to indicate that a queue
+            hasn't been defined for a `DataSource` object; the exception would
+            be raised if we forgot to attach the `DataSource` to an `Alligator`.
+            """
+
+            def put(self, *args, **kwargs):
+                raise Exception(
+                    'Trying to put something onto a queue '
+                    'that has not been defined.')
+
+            def get(self, *args, **kwargs):
+                raise Exception(
+                    'Trying to get an item off a queue that has not '
+                    'been defined.')
+
+        self.output_queue = MissingQueue()  # See `MissingQueue` comment above.
+
+    def attach(self, alligator):
+        """
+        Attach the `Alligator` input queue to the `DataSource` object.
+        """
+
+        alligator.attach_data_source(self)
+
+    def __gt__(self, other):
+        """
+        Just 'cuz we can be cute and overload operators.
+        """
+
+        self.attach(other)
 
     def start(self):
         raise Exception('`start` method should be overridden by child class.')
