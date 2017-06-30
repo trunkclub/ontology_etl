@@ -5,18 +5,11 @@ to the proper `Entity` classes to be instantiated.
 
 import time
 from Queue import Queue
+import collections
+import copy
+from ontology import Entity
 from global_configs import *
 import etl_utils
-import copy
-
-
-def get_key_path(some_dict, list_of_keys, in_place=False):
-    if not isinstance(list_of_keys, list):
-        list_of_keys = [list_of_keys]
-    tmp_dict = some_dict
-    for key in list_of_keys:
-        tmp_dict = tmp_dict[key]
-    return copy.deepcopy(tmp_dict) if not in_place else tmp_dict 
 
 
 class Alligator(object):
@@ -34,15 +27,30 @@ class Alligator(object):
         self.check_interval = check_interval
         self.entities_dict = {}
         self.entities_configuration = {}
-        self.instantiate_entities()  # entities_dict and entities_configuration
+        self.data_sources = {}
+        self.source_to_entity_dict = collections.defaultdict(list)
+        self.instantiate_entities()  # Entities_dict and entities_configuration
+        self.data_source_to_entity_config()  # Reverse mapping
+        self.output_queue = Queue()
 
     def attach_data_source(self, data_source):
         data_source.output_queue = self.input_queue
+        self.data_sources[data_source.name] = data_source
+
+    def attach_validator(self, validator):
+        validator.input_queue = self.output_queue
 
     def __lt__(self, other):
         self.attach_data_source(other)
 
+    def __gt__(self, validator):
+        self.attach_validator(validator)
+
     def raw_entities(self):
+        """
+        Iterate over this method to access all incoming data.
+        """
+
         while 1:
             while self.input_queue.empty():
                 time.sleep(self.check_interval)
@@ -59,6 +67,16 @@ class Alligator(object):
             self.entities_dict[entity_class].sources_dict = entity_config[
                 'sources']
 
+    def data_source_to_entity_config(self):
+        """
+        Creates a mapping from each entity to a list of data sources that
+        can be used to construct it.
+        """
+
+        for entity_name, config in self.entities_configuration.iteritems():
+            for source_name, _ in config['sources'].iteritems():
+                self.source_to_entity_dict[source_name].append(entity_name)
+    
 
 if __name__ == '__main__':
-    alligator = Alligator()
+    pass

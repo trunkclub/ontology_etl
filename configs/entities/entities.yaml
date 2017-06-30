@@ -1,17 +1,27 @@
 Person:
   sources:
-    json_file_source_test:
+    test_json_file_source:
       - transform: test_transform
       - snippet: test_snippet
+  identifier: name
   attributes:
     name:
       type: str
       required: True
       sources:
-      - json_file_source_test: name
+        - test_json_file_source:
+            keypath: [name]
+            required: True
+        - some_other_fake_source:
+            keypath: [not, a, real, key, path]
+            required: False
     age:
       type: int
-      required: False
+      required: True
       sources:
-      - json_file_source_test: age
-      
+        - test_json_file_source:
+            keypath: [demographic_data, age]
+            required: True
+        - some_other_fake_source:
+            keypath: [not, a, real, key, path]
+            required: False
