@@ -28,26 +28,10 @@ class QueuedData(object):
 
 class DataSource(object):
 
-    def __init__(self):
+    def __init__(self, name=None):
 
-        class MissingQueue(object):
-            """
-            This is a dummy class whose only purpose is to indicate that a queue
-            hasn't been defined for a `DataSource` object; the exception would
-            be raised if we forgot to attach the `DataSource` to an `Alligator`.
-            """
-
-            def put(self, *args, **kwargs):
-                raise Exception(
-                    'Trying to put something onto a queue '
-                    'that has not been defined.')
-
-            def get(self, *args, **kwargs):
-                raise Exception(
-                    'Trying to get an item off a queue that has not '
-                    'been defined.')
-
-        self.output_queue = MissingQueue()  # See `MissingQueue` comment above.
+        self.output_queue = etl_utils.MissingQueue()
+        self.name = name
 
     def attach(self, alligator):
         """
@@ -75,9 +59,9 @@ class FileSource(DataSource):
     Class for ingesting from files as they are detected by watchdog.
     """
     
-    def __init__(self, directory=None):
+    def __init__(self, directory=None, name=None):
         self.directory = directory
-        super(FileSource, self).__init__()
+        super(FileSource, self).__init__(name=name)
     
     def start(self):
         """
