@@ -16,7 +16,7 @@ from watchdog.events import (
     LoggingEventHandler, RegexMatchingEventHandler, FileCreatedEvent,
     FileModifiedEvent)
 from global_configs import *
-
+import etl_utils
 
 
 class QueuedData(object):
