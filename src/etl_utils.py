@@ -2,6 +2,7 @@
 A place for little helper functions.
 """
 
+import threading
 import os
 import yaml
 
@@ -49,3 +50,7 @@ def get_key_path(some_dict, list_of_keys, in_place=True):
     return copy.deepcopy(tmp_dict) if not in_place else tmp_dict 
 
 
+def run_in_thread(target, *args, **kwargs):
+    thread = threading.Thread(target=target, args=args, kwargs=kwargs)
+    thread.start()
+    return thread

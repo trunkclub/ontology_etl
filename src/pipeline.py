@@ -1,15 +1,21 @@
 import ontology
 import entity_alligator
 from logic_validator import LogicValidator
+from dependency_checker import DependencyChecker
 from global_configs import *
 import intake
 import etl_utils
+from etl_utils import run_in_thread
+
 
 
 if __name__ == '__main__':
     alligator = entity_alligator.Alligator()
     logic_validator = LogicValidator()
+    dependency_checker = DependencyChecker()
     alligator > logic_validator
+    logic_validator > dependency_checker
+    run_in_thread(logic_validator.start)
     ontology.instantiate_data_sources()
     ontology.attach_data_sources_to_alligator(alligator)
     ontology.start_data_sources()
@@ -34,5 +40,3 @@ if __name__ == '__main__':
                 attribute_dict[attribute] = attribute_value
             thing = alligator.entities_dict[entity](**attribute_dict)
             alligator.output_queue.put(thing)
-            import pdb; pdb.set_trace()
-
