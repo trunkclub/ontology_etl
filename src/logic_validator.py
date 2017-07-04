@@ -5,17 +5,15 @@ that requires retrieving other data.
 This class is obviously a stub.
 """
 
-from etl_utils import MissingQueue
+from etl_utils import QueueableThreadable
 import time
-from Queue import Queue
 
 
-class LogicValidator(object):
+class LogicValidator(QueueableThreadable):
 
     def __init__(self, check_interval=1):
         self.check_interval = check_interval
-        self.input_queue = MissingQueue()
-        self.output_queue = Queue()
+        super(LogicValidator, self).__init__()
 
     def __call__(self, entity):
         """
@@ -31,21 +29,6 @@ class LogicValidator(object):
         
         print 'Failed validation:', thing
 
-    def start(self):
-        while 1:
-            while self.input_queue.empty():
-                time.sleep(self.check_interval)
-            thing = self.input_queue.get()
-            if self(thing):  # If it passes
-                self.output_queue.put(thing)
-                print 'LogicValidator passed'
-            else:
-                self.log_validation_failure(thing)
-
-    def attach_dependency_checker(self, dependency_checker):
-        dependency_checker.input_queue = self.output_queue
-
-    def __gt__(self, other):
-        self.attach_dependency_checker(other)
-
-
+    def process_thing(self, thing, *args, **kwargs):
+        print 'LogicValidator passed (vacuously)'
+        return thing

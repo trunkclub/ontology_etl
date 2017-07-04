@@ -3,13 +3,13 @@ The `CommandExecutor` reads `Command` objects from a queue and
 calls their `run` methods.
 """
 
-from etl_utils import MissingQueue
+from etl_utils import Queueable
 
 
-class CommandExecutor(object):
+class CommandExecutor(Queueable):
 
     def __init__(self):
-        self.input_queue = MissingQueue()
+        super(CommandExecutor, self).__init__()
 
     def start(self):
         pass

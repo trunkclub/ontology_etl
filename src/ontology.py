@@ -10,10 +10,9 @@ import os
 import threading
 import collections
 from global_configs import *
-from intake import *
 import yaml
 import etl_utils
-
+from intake import JSONFileSource
 
 SOURCES_STORE = {}
 
@@ -30,6 +29,7 @@ class Entity(object):
 
 
 def instantiate_data_sources():
+    print 'instantiate_data_sources()'
     global SOURCES_STORE
     sources_configuration = etl_utils.get_yaml_files_from_directory(
         DATA_SOURCES_DIR)
@@ -43,17 +43,20 @@ def instantiate_data_sources():
 
 def start_data_sources():
     global SOURCES_STORE
+    data_source_thread_dict = {}
     data_source_workers = collections.defaultdict(dict)
     for data_source_name, data_source in SOURCES_STORE.iteritems():
         data_source_thread = threading.Thread(target=data_source.start)
+        data_source_thread_dict[data_source_name] = data_source_thread
         data_source_thread.start()
+    return data_source_thread_dict
 
 def attach_data_sources_to_alligator(alligator):
     global SOURCES_STORE
     for data_source_name, data_source in SOURCES_STORE.iteritems():
         data_source > alligator
 
-instantiate_data_sources()
+# instantiate_data_sources()
 
 if __name__ == '__main__':
     instantiate_entities()

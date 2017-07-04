@@ -5,6 +5,70 @@ A place for little helper functions.
 import threading
 import os
 import yaml
+import Queue
+import time
+
+
+class Threadable(object):
+    """
+    Mixin class for things that run in their own thread.
+    """
+
+    def __init__(self, check_interval=1):
+        self.thread = None
+        self.check_interval = check_interval
+
+    def thread_loop(self, *args, **kwargs):
+        while 1:
+            while self.input_queue.empty():
+                time.sleep(self.check_interval)
+            thing = self.input_queue.get()
+            thing_result = self.process_thing(thing, *args, **kwargs)
+            if isinstance(self, Queueable):
+                self.output_queue.put(thing_result)
+
+    def process_thing(self, *args, **kwargs):
+        raise Exception(
+            '`process_thing` method must be overridden in any '
+            'child inheriting from `Threadable`.')
+
+    def start(self, *args, **kwargs):
+        self.thread = threading.Thread(
+            target=self.thread_loop,
+            args=args,
+            kwargs=kwargs)
+        self.thread.start()
+        return self.thread
+
+
+class Queueable(object):
+    """
+    Mixin class for things that have input and output queues.
+    """
+
+    def __init__(self):
+        self.input_queue = Queue.Queue()
+        self.output_queue = Queue.Queue()
+
+    def attach(self, other):
+        self.output_queue = other.input_queue
+
+    def __gt__(self, other):
+        self.attach(other)
+        return other
+
+    def __lt__(self, other):
+        other.attach(self)
+
+class QueueableThreadable(Queueable, Threadable):
+    """
+    Convenience class for inheriting from both classes and calling
+    their constructors in one place.
+    """
+
+    def __init__(self, *args, **kwargs):
+        Queueable.__init__(self, *args, **kwargs)
+        Threadable.__init__(self, *args, **kwargs)
 
 
 class MissingQueue(object):

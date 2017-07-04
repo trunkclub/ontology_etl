@@ -4,15 +4,13 @@ to the proper `Entity` classes to be instantiated.
 """
 
 import time
-from Queue import Queue
 import collections
-import copy
-from ontology import Entity
+import ontology
 from global_configs import *
-import etl_utils
+from etl_utils import get_yaml_files_from_directory, QueueableThreadable
 
 
-class Alligator(object):
+class Alligator(QueueableThreadable):
     """
     Steps:
     1. Load the configs for the ontology.
@@ -22,7 +20,6 @@ class Alligator(object):
     """
 
     def __init__(self, check_interval=1, state_dict=None):
-        self.input_queue = Queue()
         self.state_dict = state_dict or {}
         self.check_interval = check_interval
         self.entities_dict = {}
@@ -31,21 +28,8 @@ class Alligator(object):
         self.source_to_entity_dict = collections.defaultdict(list)
         self.instantiate_entities()  # Entities_dict and entities_configuration
         self.data_source_to_entity_config()  # Reverse mapping
-        self.output_queue = Queue()
-
-    def attach_data_source(self, data_source):
-        data_source.output_queue = self.input_queue
-        self.data_sources[data_source.name] = data_source
-
-    def attach_validator(self, validator):
-        validator.input_queue = self.output_queue
-
-    def __lt__(self, other):
-        self.attach_data_source(other)
-
-    def __gt__(self, validator):
-        self.attach_validator(validator)
-
+        super(Alligator, self).__init__()
+    
     def raw_entities(self):
         """
         Iterate over this method to access all incoming data.
@@ -59,11 +43,12 @@ class Alligator(object):
             yield thing
 
     def instantiate_entities(self):
-        self.entities_configuration = etl_utils.get_yaml_files_from_directory(
+        self.entities_configuration = get_yaml_files_from_directory(
             ENTITIES_DIR)
         for entity_class, entity_config in (
                 self.entities_configuration.iteritems()):
-            self.entities_dict[entity_class] = type(entity_class, (Entity,), {})
+            self.entities_dict[entity_class] = type(
+                entity_class, (ontology.Entity,), {})
             self.entities_dict[entity_class].sources_dict = entity_config[
                 'sources']
 

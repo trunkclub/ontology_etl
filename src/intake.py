@@ -10,14 +10,12 @@ appropriate entity classes.
 
 import yaml
 import json
-from Queue import Queue
 from watchdog.observers import Observer
 from watchdog.events import (
     LoggingEventHandler, RegexMatchingEventHandler, FileCreatedEvent,
     FileModifiedEvent)
 from global_configs import *
-import etl_utils
-
+from etl_utils import Queueable
 
 class QueuedData(object):
 
@@ -26,32 +24,21 @@ class QueuedData(object):
         self.origin = origin
 
 
-class DataSource(object):
+class DataSource(Queueable):
 
     def __init__(self, name=None):
-
-        self.output_queue = etl_utils.MissingQueue()
         self.name = name
-
-    def attach(self, alligator):
-        """
-        Attach the `Alligator` input queue to the `DataSource` object.
-        """
-
-        alligator.attach_data_source(self)
-
-    def __gt__(self, other):
-        """
-        Just 'cuz we can be cute and overload operators.
-        """
-
-        self.attach(other)
+        super(DataSource, self).__init__()
 
     def start(self):
         raise Exception('`start` method should be overridden by child class.')
     
     def stop(self):
         raise Exception('`stop` method should be overridden by child class.')
+
+    def attach(self, alligator):
+        self.output_queue = alligator.input_queue
+        alligator.data_sources[self.name] = self
 
 
 class FileSource(DataSource):
@@ -60,6 +47,7 @@ class FileSource(DataSource):
     """
     
     def __init__(self, directory=None, name=None):
+        print 'initializing FileSource'
         self.directory = directory
         super(FileSource, self).__init__(name=name)
     
@@ -69,6 +57,7 @@ class FileSource(DataSource):
         child class's `read` method when a new file appears.
         """
 
+        print 'FileSource start method called...', self.directory
         event_handler = RegexMatchingEventHandler(
             regexes=['.*'],
             ignore_regexes=[],
@@ -80,7 +69,9 @@ class FileSource(DataSource):
         observer = Observer()
         observer.schedule(event_handler, watch_path, recursive=False)
         observer.start()
-        observer.join()  # Check this
+        print 'observer started.'
+        #observer.join()  # Check this
+        #print 'observer joined'
 
     def read(self, *args, **kwargs):
         """
@@ -101,12 +92,14 @@ class JSONFileSource(FileSource):
     """
 
     def __init__(self, *args, **kwargs):
+        print 'initializing JSONFileSource'
         super(JSONFileSource, self).__init__(*args, **kwargs)
 
     def read(self, path):
         """
         Read the incoming file and load it as JSON object.
         """
+        print path
         if isinstance(path, (FileCreatedEvent, FileModifiedEvent,)):
             path = path.src_path
         with open(path, 'r') as incoming_file:
@@ -116,5 +109,5 @@ class JSONFileSource(FileSource):
 
 
 if __name__ == '__main__':
-    json_file_source = JSONFileSource(directory=DATA_SOURCES_DIR)
-
+    json_file_source = JSONFileSource(directory=WATCHDOG_DIR)
+    json_file_source.start()
