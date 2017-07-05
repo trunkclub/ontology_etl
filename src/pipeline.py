@@ -5,7 +5,7 @@ from dependency_checker import DependencyChecker
 from global_configs import *
 import intake
 import etl_utils
-from etl_utils import run_in_thread
+from etl_utils import run_in_thread, load_snippet
 from intake import DataSource
 from entity_alligator import Alligator
 from command_executor import CommandExecutor
@@ -38,6 +38,7 @@ class ETLPipeline(object):
             self.command_executor = other
         else:
             raise Exception('Tried to add something weird.')
+        other.pipeline = self
 
     def connect_components(self):
         for data_source in self.data_sources:
@@ -63,11 +64,21 @@ if __name__ == '__main__':
         etl_pipeline.add(data_source)
   
     etl_pipeline.connect_components()
-    
+   
+    snippet_dict = {}
+    for entity_name, entity_configuration in (
+            etl_pipeline.alligator.entities_configuration.iteritems()):
+        snippet_list = entity_configuration['command_snippets']
+        for snippet_name in snippet_list:
+            snippet_function = load_snippet(*snippet_name.split('.'))
+            snippet_dict[snippet_name] = snippet_function
+
+    etl_pipeline.snippet_dict = snippet_dict
+
     etl_pipeline.logic_validator_thread = logic_validator.start()
+    etl_pipeline.dependency_checker_thread = dependency_checker.start()
     etl_pipeline.data_source_thread_dict = ontology.start_data_sources()
-
-
+    etl_pipeline.command_executor_thread = command_executor.start()
 
     for message in alligator.raw_entities():
         print message.payload

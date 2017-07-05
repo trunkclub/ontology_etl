@@ -1,0 +1,11 @@
+mysql_test_store:
+  data_store_class: MySQLDataStore
+  constructor_options:
+    host: MYSQL_HOST
+    user: MYSQL_USER
+    password: MYSQL_PASSWORD
+    database: MYSQL_DATABASE
+  contains:
+    Person:
+      age: [demographics, person_age]
+      name: [demographics, first_name]

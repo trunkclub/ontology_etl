@@ -25,3 +25,5 @@ Person:
         - some_other_fake_source:
             keypath: [not, a, real, key, path]
             required: False
+  command_snippets:
+    - mean_age_snippet.some_function

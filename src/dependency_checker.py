@@ -8,6 +8,7 @@ import importlib
 import sys
 from etl_utils import QueueableThreadable, get_yaml_files_from_directory
 from global_configs import *
+from command import UpsertCommand, RecalculateCommand
 
 
 class DependencyRule(object):
@@ -31,6 +32,10 @@ class DependencyChecker(QueueableThreadable):
         self.dependency_config = get_yaml_files_from_directory(DEPENDENCIES_DIR)
         super(DependencyChecker, self).__init__()
 
+    def process_thing(self, thing, *args, **kwargs):
+        output = UpsertCommand(thing)
+        print 'DependencyChecker passthrough:', output
+        return output
 
 if __name__ == '__main__':
 

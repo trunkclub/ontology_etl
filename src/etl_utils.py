@@ -4,9 +4,25 @@ A place for little helper functions.
 
 import threading
 import os
+import sys
 import yaml
 import Queue
 import time
+import hashlib
+import importlib
+from global_configs import *
+
+
+def load_snippet(module_name, function_name):
+    if SNIPPETS_DIR not in sys.path:
+        sys.path.append(SNIPPETS_DIR)
+    module = importlib.import_module(module_name)
+    function = getattr(module, function_name)
+    return function
+
+
+def hexhash(thing):
+    return hashlib.md5(thing.__repr__()).hexdigest()
 
 
 class Threadable(object):
@@ -59,6 +75,7 @@ class Queueable(object):
 
     def __lt__(self, other):
         other.attach(self)
+
 
 class QueueableThreadable(Queueable, Threadable):
     """

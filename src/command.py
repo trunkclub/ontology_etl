@@ -3,6 +3,8 @@ A `Command` is something that causes a change of state to
 a persistant store.
 """
 
+from etl_utils import hexhash
+
 
 class Command(object):
     """
@@ -21,6 +23,15 @@ class Command(object):
 
         raise NotImplementedError(
             'Override the `run` method in every subclass of `Job`.')
+
+    def __repr__(self):
+        """
+        We'll replace this. Just here to get hashes.
+        """
+
+        return self.__class__.__name__ + ' ' + '|'.join(
+            [str(getattr(self, attribute)) for attribute in
+             sorted(self.__dict__.keys())])
 
 
 class RecalculateCommand(Command):
@@ -47,5 +58,5 @@ class UpsertCommand(Command):
     """
 
     def __init__(self, entity):
-        super(UpsertCommand, self).__init__()
         self.entity = entity
+        super(UpsertCommand, self).__init__()
