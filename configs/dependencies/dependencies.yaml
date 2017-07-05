@@ -1,2 +1,8 @@
 Person:
-  age: some_snippet.foo
+  age:
+    - entity: Statistic
+      attribute: mean_age
+      snippet: mean_age_snippet.some_function
+    - entity: Statistic
+      attribute: people_count
+      snippet: people_count_snippet.foobar

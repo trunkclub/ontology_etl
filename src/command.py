@@ -23,6 +23,22 @@ class Command(object):
             'Override the `run` method in every subclass of `Job`.')
 
 
+class RecalculateCommand(Command):
+    """
+    Command to recalculate a specific value, triggered by ingesting
+    information that could change its value.
+    """
+
+    def __init__(self, snippet=None, snippet_function=None,
+                 triggering_entity=None, updating_entity=None,
+                 updating_attribute=None):
+        self.snippet = snippet
+        self.snippet_function = snippet_function
+        self.triggering_entity = triggering_entity
+        self.updating_entity = updating_entity
+        self.updating_attribute = updating_attribute
+
+
 class UpsertCommand(Command):
     """
     An `UpsertCommand` will take an entity and upsert a row (or

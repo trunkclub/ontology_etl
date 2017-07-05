@@ -8,7 +8,6 @@ import etl_utils
 from etl_utils import run_in_thread
 from intake import DataSource
 from entity_alligator import Alligator
-from dependency_checker import DependencyChecker
 from command_executor import CommandExecutor
 
 class ETLPipeline(object):

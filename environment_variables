@@ -2,6 +2,7 @@ export BASE_DIR=/home/vagrant/trunk/ontology_etl
 export CONFIG_DIR=$BASE_DIR/configs
 export DATA_SOURCES_DIR=$CONFIG_DIR/data_sources
 export WATCHDOG_DIR=$BASE_DIR/intake_sample_directory
+export DEPENDENCIES_DIR=$CONFIG_DIR/dependencies
 export TRANSFORMS_DIR=$CONFIG_DIR/transforms
 export ENTITIES_DIR=$CONFIG_DIR/entities
 export SNIPPETS_DIR=$CONFIG_DIR/snippets
