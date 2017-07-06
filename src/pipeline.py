@@ -9,6 +9,8 @@ from etl_utils import run_in_thread, load_snippet
 from intake import DataSource
 from entity_alligator import Alligator
 from command_executor import CommandExecutor
+from data_store import DataStore, get_data_stores_dict
+
 
 class ETLPipeline(object):
     """
@@ -21,6 +23,7 @@ class ETLPipeline(object):
         self.logic_validator = None
         self.dependency_checker = None
         self.command_executor = None
+        self.data_store_dict = {}
 
         self.logic_validator_thread = None
         self.data_source_thread_dict = None
@@ -36,6 +39,8 @@ class ETLPipeline(object):
             self.dependency_checker = other
         elif isinstance(other, CommandExecutor):
             self.command_executor = other
+        elif isinstance(other, DataStore):
+            self.data_store_dict[other.name] = other
         else:
             raise Exception('Tried to add something weird.')
         other.pipeline = self
@@ -55,13 +60,18 @@ if __name__ == '__main__':
     logic_validator = LogicValidator()
     dependency_checker = DependencyChecker()
     command_executor = CommandExecutor()
-    
+   
+    data_stores_dict = get_data_stores_dict()
+
+
     etl_pipeline.add(alligator)
     etl_pipeline.add(logic_validator)
     etl_pipeline.add(dependency_checker)
     etl_pipeline.add(command_executor)
     for data_source in ontology.SOURCES_STORE.itervalues():
         etl_pipeline.add(data_source)
+    for data_store in data_stores_dict.itervalues():
+        etl_pipeline.add(data_store)
   
     etl_pipeline.connect_components()
    

@@ -5,7 +5,8 @@ calls their `run` methods.
 
 from Queue import Queue
 from etl_utils import QueueableThreadable
-
+from ontology import Entity
+from command import UpsertCommand
 
 class CommandExecutor(QueueableThreadable):
 
@@ -14,4 +15,12 @@ class CommandExecutor(QueueableThreadable):
         super(CommandExecutor, self).__init__()
 
     def process_thing(self, thing, *args, **kwargs):
-        print 'CommandExecutor passthrough:', thing
+        if isinstance(thing, Entity):
+            command = UpsertCommand(thing)
+        else:
+            command = thing
+        
+        print 'CommandExecutor passthrough:', command
+        if isinstance(command, UpsertCommand):
+            for data_store in self.pipeline.data_store_dict.itervalues():
+                data_store.upsert(command.entity)

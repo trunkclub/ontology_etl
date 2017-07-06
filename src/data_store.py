@@ -49,11 +49,12 @@ class MySQLDataStore(DataStore):
 
         super(MySQLDataStore, self).__init__()
 
-    def upsert(self, entity_type, attribute_list, attribute_values):
-        if not isinstance(attribute_list, (list, tuple,)):
-            attribute_list = tuple([attribute_list])
-        if not isinstance(attribute_values, (list, tuple,)):
-            attribute_values = tuple([attribute_values])
+    def upsert(self, entity):
+        entity_type = entity.__class__.__name__
+        attribute_list = tuple(entity.__dict__.keys())
+        attribute_values = tuple(
+            [getattr(entity, attribute) for attribute in attribute_list])
+
         attribute_values_placeholder = ', '.join(['%s'] * len(attribute_values))
         # We'll assume only one table for the moment
         table = 'demographics'
@@ -71,9 +72,8 @@ class MySQLDataStore(DataStore):
                 attribute_values_placeholder=attribute_values_placeholder)
         print query
         self.cursor.execute(query, attribute_values)
-        import pdb; pdb.set_trace()
+        self.cursor.execute('COMMIT;')
         
-
 
 def instantiate_data_store(data_store_name, data_store_configuration):    
     constructor_keywords = data_store_configuration['constructor_options']
@@ -102,6 +102,6 @@ if __name__ == '__main__':
     d = get_data_stores_dict()
     store = d['mysql_test_store']
     entity = 'Person'
-    attribute = 'age'
-    value = 82
+    attribute = ['name', 'age']
+    value = ['Alice', 97]
     store.upsert(entity, attribute, value)

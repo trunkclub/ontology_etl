@@ -33,7 +33,7 @@ class DependencyChecker(QueueableThreadable):
         super(DependencyChecker, self).__init__()
 
     def process_thing(self, thing, *args, **kwargs):
-        output = UpsertCommand(thing)
+        output = thing
         print 'DependencyChecker passthrough:', output
         return output
 

@@ -6,6 +6,7 @@ This class is obviously a stub.
 """
 
 from etl_utils import QueueableThreadable
+from command import UpsertCommand
 import time
 
 
