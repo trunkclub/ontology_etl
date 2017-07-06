@@ -7,5 +7,5 @@ mysql_test_store:
     database: MYSQL_DATABASE
   contains:
     Person:
-      age: [demographics, person_age]
+      age: [demographics, age]
       name: [demographics, first_name]
