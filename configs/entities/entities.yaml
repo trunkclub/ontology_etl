@@ -25,5 +25,13 @@ Person:
         - some_other_fake_source:
             keypath: [not, a, real, key, path]
             required: False
+    big_glasses:
+      type: bool
+      required: False
+      sources:
+        - fake_source:
+            keypath: [not, really]
+            required: False
   command_snippets:
     - mean_age_snippet.some_function
+    - big_glasses.some_function

@@ -104,8 +104,11 @@ if __name__ == '__main__':
             for attribute, attribute_config in entity_attribute_dict.iteritems():
                 data_source_config = [
                     i for i in attribute_config['sources']
-                    if data_source_name in i.keys()][0][data_source_name]
-                required = data_source_config['required']
+                    if data_source_name in i.keys()]
+                if len(data_source_config) == 0:
+                    continue
+                data_source_config = data_source_config[0].get(data_source_name, {})
+                required = data_source_config.get('required', None)
                 keypath = data_source_config['keypath']  # Is keypath general enough?
                 attribute_value = etl_utils.get_key_path(message.payload, keypath)
                 attribute_dict[attribute] = attribute_value

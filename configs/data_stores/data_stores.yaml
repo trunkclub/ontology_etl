@@ -9,4 +9,4 @@ mysql_test_store:
     Person:
       age: [demographics, age]
       name: [demographics, first_name]
-      wears_big_glasses: [demographics, big_glasses]
+      big_glasses: [demographics, big_glasses]

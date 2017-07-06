@@ -20,7 +20,7 @@ class CommandExecutor(QueueableThreadable):
         else:
             command = thing
         
-        print 'CommandExecutor passthrough:', command
+        print 'CommandExecutor:', command
         if isinstance(command, UpsertCommand):
             for data_store in self.pipeline.data_store_dict.itervalues():
                 data_store.upsert(command.entity)

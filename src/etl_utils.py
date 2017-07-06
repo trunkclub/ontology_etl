@@ -30,7 +30,7 @@ class Threadable(object):
     Mixin class for things that run in their own thread.
     """
 
-    def __init__(self, check_interval=1):
+    def __init__(self, check_interval=5):
         self.thread = None
         self.check_interval = check_interval
 

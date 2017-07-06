@@ -49,6 +49,9 @@ class MySQLDataStore(DataStore):
 
         super(MySQLDataStore, self).__init__()
 
+    def commit(self):
+        self.cursor.execute('COMMIT;')
+
     def upsert(self, entity):
         entity_type = entity.__class__.__name__
         attribute_list = tuple(entity.__dict__.keys())
@@ -64,15 +67,20 @@ class MySQLDataStore(DataStore):
             column_list.append(column)
         column_list_string = ', '.join(column_list)
         column_list_string = ''.join(['(', column_list_string, ')'])
+        set_clause_list = []
+        for column_name, attribute_value in zip(column_list, attribute_values):
+            set_clause_list.append(column_name + ' = %s')
+        set_clause = ', '.join(set_clause_list)
         query = (
             """INSERT INTO {table} {column_list_string} VALUES """
-            """({attribute_values_placeholder});""").format(
+            """({attribute_values_placeholder}) """
+            """ON DUPLICATE KEY UPDATE {set_clause};""").format(
                 table=table,
                 column_list_string=column_list_string,
-                attribute_values_placeholder=attribute_values_placeholder)
-        print query
-        self.cursor.execute(query, attribute_values)
-        self.cursor.execute('COMMIT;')
+                attribute_values_placeholder=attribute_values_placeholder,
+                set_clause=set_clause)
+        self.cursor.execute(query, attribute_values + attribute_values)
+        self.commit()
         
 
 def instantiate_data_store(data_store_name, data_store_configuration):    

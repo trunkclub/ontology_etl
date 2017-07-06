@@ -31,5 +31,5 @@ class LogicValidator(QueueableThreadable):
         print 'Failed validation:', thing
 
     def process_thing(self, thing, *args, **kwargs):
-        print 'LogicValidator passed (vacuously)'
+        print 'LogicValidator passed'
         return thing

@@ -34,7 +34,16 @@ class DependencyChecker(QueueableThreadable):
 
     def process_thing(self, thing, *args, **kwargs):
         output = thing
-        print 'DependencyChecker passthrough:', output
+        print 'DependencyChecker:', output
+        entity_dependencies = self.dependency_config[thing.__class__.__name__]
+        for attribute in thing.__dict__.keys():
+            attribute_dependencies = entity_dependencies.get(attribute, [])
+            for action_dict in attribute_dependencies:
+                func = self.pipeline.snippet_dict[action_dict['snippet']]
+                new_entity = self.pipeline.alligator.entities_dict[action_dict['entity']]()
+                new_entity.name = thing.name
+                setattr(new_entity, action_dict['attribute'], func(thing))
+                self.pipeline.logic_validator.input_queue.put(new_entity)
         return output
 
 if __name__ == '__main__':
