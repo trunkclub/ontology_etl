@@ -63,7 +63,6 @@ if __name__ == '__main__':
    
     data_stores_dict = get_data_stores_dict()
 
-
     etl_pipeline.add(alligator)
     etl_pipeline.add(logic_validator)
     etl_pipeline.add(dependency_checker)
@@ -74,7 +73,7 @@ if __name__ == '__main__':
         etl_pipeline.add(data_store)
   
     etl_pipeline.connect_components()
-   
+ 
     snippet_dict = {}
     for entity_name, entity_configuration in (
             etl_pipeline.alligator.entities_configuration.iteritems()):
@@ -84,6 +83,8 @@ if __name__ == '__main__':
             snippet_dict[snippet_name] = snippet_function
 
     etl_pipeline.snippet_dict = snippet_dict
+
+    import pdb; pdb.set_trace()
 
     etl_pipeline.logic_validator_thread = logic_validator.start()
     etl_pipeline.dependency_checker_thread = dependency_checker.start()

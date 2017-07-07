@@ -11,6 +11,7 @@ import threading
 import collections
 from global_configs import *
 import yaml
+import cPickle as pickle
 import etl_utils
 from intake import JSONFileSource
 
@@ -22,11 +23,26 @@ class Entity(object):
     This will be a mix-in class for all dynamically-created entity
     classes from the `entities.yaml` configuration file.
     """
+
     def __init__(self, *args, **kwargs):
         for key, value in kwargs.iteritems():
             setattr(self, key, value)
         super(Entity, self).__init__()
 
+    def __getstate__(self):
+        output = ''
+        for attribute, value in self.__dict__.iteritems():
+            try:
+                output += pickle.dumps(attribute)
+                output += pickle.dumps(value)
+            except:
+                pass
+        return output
+
+    @classmethod
+    def instantiate(cls, data_store, identifier):
+        print cls
+        pass
 
 def instantiate_data_sources():
     print 'instantiate_data_sources()'

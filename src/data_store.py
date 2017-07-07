@@ -25,6 +25,11 @@ class DataStore(object):
             'The `upsert` method must be overridden by any class '
             'inheriting from `DataStore`.')
 
+    def get_attribute(self, entity_type, entity_identifier, attribute):
+        raise Exception(
+            'The `get_attribute` method must be overridden by class '
+            'inheriting from `DataStore`.')
+
 
 class MySQLDataStore(DataStore):
     """
@@ -81,6 +86,20 @@ class MySQLDataStore(DataStore):
                 set_clause=set_clause)
         self.cursor.execute(query, attribute_values + attribute_values)
         self.commit()
+
+    def get_attribute(self, entity_type, entity_identifier, attribute):
+        entity_config = self.entity_data[entity_type]
+        name_table, name_column = entity_config['name']
+        attribute_table, attribute_column = entity_config[attribute]
+        query = (
+            """SELECT {attribute_column} FROM {attribute_table} """
+            """WHERE {name_column} = %s LIMIT 1;""").format(
+                attribute_column=attribute_column,
+                attribute_table=attribute_table,
+                name_column=name_column)
+        self.cursor.execute(query, (entity_identifier,))
+        result = self.cursor.fetchone()
+        return result[0] if len(result) > 0 else None
         
 
 def instantiate_data_store(data_store_name, data_store_configuration):    

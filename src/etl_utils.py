@@ -6,11 +6,54 @@ import threading
 import os
 import sys
 import yaml
+import random
 import Queue
 import time
 import hashlib
 import importlib
+import datetime
 from global_configs import *
+
+
+class Message(object):
+    """
+    This will wrap all items that are queued so that we can easily
+    add or remove metadata.
+    """
+
+    def __init__(self, contents):
+        self.contents = contents
+        self.metadata = {}
+        self.metadata['hash'] = hexhash(random.random())
+        self.metadata['time'] = datetime.datetime.now()
+
+
+class JobQueue(Queue.Queue, object):
+    """
+    Subclass of `Queue.Queue` for connecting components and supporting
+    additional methods that will be handy. We will also override
+    `get` and `put` so that we automatically wrap each item in a class
+    for storing metadata.
+    """
+
+    def __init__(self):
+        self.item_hashes = set()
+        super(JobQueue, self).__init__()
+
+    def put(self, thing):
+        print self.item_hashes
+        if thing is not None:
+            wrapped = Message(thing)
+            self.item_hashes.add(wrapped)
+            super(JobQueue, self).put(wrapped)
+            if wrapped.metadata['hash'] in self.item_hashes:
+                print 'DUPLICATE:', wrapped.metadata['hash']
+
+    def get(self):
+        message = super(JobQueue, self).get()
+        self.item_hashes -= set([message.metadata['hash']])
+        unwrapped = message.contents
+        return unwrapped
 
 
 def load_snippet(module_name, function_name):
@@ -22,7 +65,49 @@ def load_snippet(module_name, function_name):
 
 
 def hexhash(thing):
-    return hashlib.md5(thing.__repr__()).hexdigest()
+    """
+    I think this turned out to be a bad idea. Too brittle.
+    """
+
+    def recurse_hash(some_thing, current_hash=''):
+        if isinstance(some_thing, dict):
+            sorted_keys = sorted(some_thing.keys())
+            new_thing = [
+                [key, some_thing[key]] for key in some_thing.iterkeys()]
+        elif isinstance(some_thing, type):
+            new_thing = str(some_thing)
+        elif isinstance(some_thing, datetime.datetime):
+            new_thing = some_thing.__repr__()
+        elif isinstance(some_thing, set):
+            new_thing = sorted(list(some_thing))
+        elif isinstance(some_thing, tuple):
+            new_thing = list(some_thing)
+        elif isinstance(some_thing, (int, float,)):
+            new_thing = str(some_thing)
+        elif hasattr(some_thing, '__dict__'):
+            new_thing = [
+                getattr(some_thing, '__class__').__name__, some_thing.__dict__]
+        elif isinstance(some_thing, (list,)):
+            return recurse_hash(
+                ''.join([recurse_hash(i, current_hash=current_hash)
+                         for i in some_thing]))
+        else:
+            new_thing = some_thing
+        if isinstance(new_thing, (list,)):
+            return recurse_hash(
+                ''.join([recurse_hash(i, current_hash=current_hash)
+                         for i in new_thing]))
+        try:
+            out = hashlib.md5(new_thing).hexdigest()
+            out = hashlib.md5(current_hash + out).hexdigest()
+            return out
+        except Exception as err:
+            if hasattr(some_thing, '__repr__'):
+                representation = some_thing.__repr__()
+                if representation.startswith('<') and representation.endswith('>'):
+                    some_thing = representation.split(' ')[:-1]
+            return current_hash
+    return recurse_hash(thing, current_hash='')
 
 
 class Threadable(object):
@@ -63,8 +148,8 @@ class Queueable(object):
     """
 
     def __init__(self):
-        self.input_queue = Queue.Queue()
-        self.output_queue = Queue.Queue()
+        self.input_queue = JobQueue()
+        self.output_queue = JobQueue()
 
     def attach(self, other):
         self.output_queue = other.input_queue
@@ -135,3 +220,7 @@ def run_in_thread(target, *args, **kwargs):
     thread = threading.Thread(target=target, args=args, kwargs=kwargs)
     thread.start()
     return thread
+
+
+if __name__ == '__main__':
+    pass

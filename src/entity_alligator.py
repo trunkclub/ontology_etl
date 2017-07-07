@@ -51,6 +51,8 @@ class Alligator(QueueableThreadable):
                 entity_class, (ontology.Entity,), {})
             self.entities_dict[entity_class].sources_dict = entity_config[
                 'sources']
+            self.entities_dict[entity_class].attributes = entity_config[
+                'attributes'].keys()
 
     def data_source_to_entity_config(self):
         """
