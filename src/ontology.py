@@ -9,8 +9,10 @@ data and loading it into a database.
 import os
 import threading
 import collections
-from global_configs import *
+import json
 import yaml
+import hashlib
+from global_configs import *
 import cPickle as pickle
 import etl_utils
 from intake import JSONFileSource
@@ -41,8 +43,24 @@ class Entity(object):
 
     @classmethod
     def instantiate(cls, data_store, identifier):
-        print cls
+        """
+        Just experimenting with dynamic instantiation magic.
+        """
         pass
+
+    def list_attributes(self):
+        return sorted(self.__dict__.keys())
+
+    def to_json(self):
+        attributes = {
+            attribute: getattr(self, attribute) for
+            attribute in self.list_attributes()}
+        return json.dumps(attributes, sort_keys=True)
+
+    def hash(self):
+        s = self.__class__.__name__ + self.to_json()
+        return hashlib.md5(s).hexdigest()
+
 
 def instantiate_data_sources():
     print 'instantiate_data_sources()'
@@ -75,8 +93,6 @@ def attach_data_sources_to_alligator(alligator):
 # instantiate_data_sources()
 
 if __name__ == '__main__':
-    instantiate_entities()
-    instantiate_data_sources()
     
     test_json_file_store = SOURCES_STORE['test_json_file_source']
     start_data_sources()

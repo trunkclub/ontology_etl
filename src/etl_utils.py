@@ -64,52 +64,6 @@ def load_snippet(module_name, function_name):
     return function
 
 
-def hexhash(thing):
-    """
-    I think this turned out to be a bad idea. Too brittle.
-    """
-
-    def recurse_hash(some_thing, current_hash=''):
-        if isinstance(some_thing, dict):
-            sorted_keys = sorted(some_thing.keys())
-            new_thing = [
-                [key, some_thing[key]] for key in some_thing.iterkeys()]
-        elif isinstance(some_thing, type):
-            new_thing = str(some_thing)
-        elif isinstance(some_thing, datetime.datetime):
-            new_thing = some_thing.__repr__()
-        elif isinstance(some_thing, set):
-            new_thing = sorted(list(some_thing))
-        elif isinstance(some_thing, tuple):
-            new_thing = list(some_thing)
-        elif isinstance(some_thing, (int, float,)):
-            new_thing = str(some_thing)
-        elif hasattr(some_thing, '__dict__'):
-            new_thing = [
-                getattr(some_thing, '__class__').__name__, some_thing.__dict__]
-        elif isinstance(some_thing, (list,)):
-            return recurse_hash(
-                ''.join([recurse_hash(i, current_hash=current_hash)
-                         for i in some_thing]))
-        else:
-            new_thing = some_thing
-        if isinstance(new_thing, (list,)):
-            return recurse_hash(
-                ''.join([recurse_hash(i, current_hash=current_hash)
-                         for i in new_thing]))
-        try:
-            out = hashlib.md5(new_thing).hexdigest()
-            out = hashlib.md5(current_hash + out).hexdigest()
-            return out
-        except Exception as err:
-            if hasattr(some_thing, '__repr__'):
-                representation = some_thing.__repr__()
-                if representation.startswith('<') and representation.endswith('>'):
-                    some_thing = representation.split(' ')[:-1]
-            return current_hash
-    return recurse_hash(thing, current_hash='')
-
-
 class Threadable(object):
     """
     Mixin class for things that run in their own thread.
