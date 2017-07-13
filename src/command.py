@@ -3,8 +3,6 @@ A `Command` is something that causes a change of state to
 a persistant store.
 """
 
-from etl_utils import hexhash
-
 
 class Command(object):
     """

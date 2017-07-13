@@ -15,6 +15,10 @@ import datetime
 from global_configs import *
 
 
+def hexhash(thing):
+    return hashlib.md5(str(random.random())).hexdigest()
+
+
 class Message(object):
     """
     This will wrap all items that are queued so that we can easily
@@ -69,7 +73,7 @@ class Threadable(object):
     Mixin class for things that run in their own thread.
     """
 
-    def __init__(self, check_interval=5):
+    def __init__(self, check_interval=.15):
         self.thread = None
         self.check_interval = check_interval
 

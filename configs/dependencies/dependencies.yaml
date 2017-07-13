@@ -1,5 +1,6 @@
 Person:
-  age:
-    - entity: Person
-      attribute: big_glasses
-      snippet: big_glasses.some_function
+  upsert:
+    age:
+      - entity: Person
+        attribute: big_glasses
+        snippet: big_glasses.some_function
