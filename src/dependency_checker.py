@@ -41,16 +41,18 @@ class DependencyChecker(QueueableThreadable):
         else:
             # Add elif statements for dependencies on other commands
             return
-        entity_dependencies = self.dependency_config[entity_type]['upsert']  # Make this parameter later
+        entity_dependencies = self.dependency_config[entity_type]['upsert']  # Make this a parameter later
         for attribute in entity.__dict__.keys():
             attribute_dependencies = entity_dependencies.get(attribute, [])
             for action_dict in attribute_dependencies:
                 func = self.pipeline.snippet_dict[action_dict['snippet']]
-                new_entity = self.pipeline.alligator.entities_dict[action_dict['entity']]()
+                new_entity = self.pipeline.alligator.entities_dict[
+                    action_dict['entity']]()
                 new_entity.name = entity.name
                 setattr(new_entity, action_dict['attribute'], func(entity))
                 self.pipeline.logic_validator.input_queue.put(new_entity)
         return output
+
 
 if __name__ == '__main__':
 
