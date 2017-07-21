@@ -3,4 +3,5 @@ Person:
     age:
       - entity: Person
         attribute: big_glasses
-        snippet: big_glasses.some_function
+        identifier_function_snippet: utilities.identity
+        calculating_snippet: big_glasses.some_function

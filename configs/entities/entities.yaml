@@ -2,7 +2,8 @@ Person:
   sources:
     test_json_file_source:
       - transform: test_transform
-      - snippet: test_snippet
+        snippet: test_snippet
+        test_snippet: person_test.person_test
   identifier: name
   attributes:
     name:
@@ -32,6 +33,3 @@ Person:
         - fake_source:
             keypath: [not, really]
             required: False
-  command_snippets:
-    - mean_age_snippet.some_function
-    - big_glasses.some_function

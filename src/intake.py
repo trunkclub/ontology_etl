@@ -102,6 +102,8 @@ class JSONFileSource(FileSource):
         print path
         if isinstance(path, (FileCreatedEvent, FileModifiedEvent,)):
             path = path.src_path
+        else:
+            return
         with open(path, 'r') as incoming_file:
             incoming = json.load(incoming_file)
         incoming = QueuedData(incoming, self)

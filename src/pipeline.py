@@ -72,6 +72,7 @@ if __name__ == '__main__':
     etl_pipeline.add(dependency_checker)
     etl_pipeline.add(command_generator)
     etl_pipeline.add(command_executor)
+    etl_pipeline.add(alligator)
     for data_source in ontology.SOURCES_STORE.itervalues():
         etl_pipeline.add(data_source)
     for data_store in data_stores_dict.itervalues():
@@ -80,43 +81,27 @@ if __name__ == '__main__':
     etl_pipeline.connect_components()
  
     snippet_dict = {}
+    snippet_list = []
     for entity_name, entity_configuration in (
             etl_pipeline.alligator.entities_configuration.iteritems()):
-        snippet_list = entity_configuration['command_snippets']
-        for snippet_name in snippet_list:
-            snippet_function = load_snippet(*snippet_name.split('.'))
-            snippet_dict[snippet_name] = snippet_function
+        for source_name, source_config_list in entity_configuration[
+                'sources'].iteritems():
+            for source_config in source_config_list:
+                # Add other types of snippets to load here
+                if 'test_snippet' in source_config:
+                    snippet_list.append(source_config['test_snippet'])
+        
+    for snippet_name in snippet_list:
+        snippet_function = load_snippet(*snippet_name.split('.'))
+        snippet_dict[snippet_name] = snippet_function
+
+    import pdb; pdb.set_trace()
 
     etl_pipeline.snippet_dict = snippet_dict
-
 
     etl_pipeline.logic_validator_thread = logic_validator.start()
     etl_pipeline.dependency_checker_thread = dependency_checker.start()
     etl_pipeline.data_source_thread_dict = ontology.start_data_sources()
     etl_pipeline.command_generator.start()
     etl_pipeline.command_executor_thread = command_executor.start()
-
-    for message in alligator.raw_entities():
-        print message.payload
-        print message.origin.__dict__
-        data_source_name = message.origin.name
-        relevant_entities = alligator.source_to_entity_dict[data_source_name]
-        print 'Relevant entities:', relevant_entities
-        print 'Data source:      ', data_source_name
-        for entity in relevant_entities:
-            entity_attribute_dict = alligator.entities_configuration[entity][
-                'attributes']
-            attribute_dict = {}
-            for attribute, attribute_config in entity_attribute_dict.iteritems():
-                data_source_config = [
-                    i for i in attribute_config['sources']
-                    if data_source_name in i.keys()]
-                if len(data_source_config) == 0:
-                    continue
-                data_source_config = data_source_config[0].get(data_source_name, {})
-                required = data_source_config.get('required', None)
-                keypath = data_source_config['keypath']  # Is keypath general enough?
-                attribute_value = etl_utils.get_key_path(message.payload, keypath)
-                attribute_dict[attribute] = attribute_value
-            thing = alligator.entities_dict[entity](**attribute_dict)
-            alligator.output_queue.put(thing)
+    etl_pipeline.alligator.start()
