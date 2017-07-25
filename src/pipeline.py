@@ -84,19 +84,17 @@ if __name__ == '__main__':
     snippet_list = []
     for entity_name, entity_configuration in (
             etl_pipeline.alligator.entities_configuration.iteritems()):
-        for source_name, source_config_list in entity_configuration[
+        for source_name, source_config in entity_configuration[
                 'sources'].iteritems():
-            for source_config in source_config_list:
-                # Add other types of snippets to load here
-                if 'test_snippet' in source_config:
-                    snippet_list.append(source_config['test_snippet'])
+            # Add other types of snippets to load here
+            if 'test_snippet' in source_config:
+                snippet_list.append(source_config['test_snippet'])
         
     for snippet_name in snippet_list:
         snippet_function = load_snippet(*snippet_name.split('.'))
         snippet_dict[snippet_name] = snippet_function
-
-    import pdb; pdb.set_trace()
-
+    snippet_dict.update(dependency_checker.snippet_dict)
+    # Snippets are loaded
     etl_pipeline.snippet_dict = snippet_dict
 
     etl_pipeline.logic_validator_thread = logic_validator.start()
@@ -105,3 +103,5 @@ if __name__ == '__main__':
     etl_pipeline.command_generator.start()
     etl_pipeline.command_executor_thread = command_executor.start()
     etl_pipeline.alligator.start()
+    print etl_pipeline.snippet_dict
+    import pdb; pdb.set_trace() 

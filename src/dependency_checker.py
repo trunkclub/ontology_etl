@@ -6,7 +6,9 @@ processed.
 
 import importlib
 import sys
-from etl_utils import QueueableThreadable, get_yaml_files_from_directory
+from etl_utils import (
+    find_key_value, QueueableThreadable,
+    get_yaml_files_from_directory, load_snippet)
 from global_configs import *
 from command import UpsertCommand, RecalculateCommand
 
@@ -30,22 +32,36 @@ class DependencyChecker(QueueableThreadable):
     def __init__(self, *args, **kwargs):
 
         self.dependency_config = get_yaml_files_from_directory(DEPENDENCIES_DIR)
+        # Insert snippets from dependency_config dictionary here
+        all_snippet_names = []
+        for snippet_key in [
+                'calculating_snippet', 'identifier_function_snippet']:
+            snippet_names = find_key_value(
+                self.dependency_config, snippet_key)
+            all_snippet_names += snippet_names
+        self.snippet_dict = {
+            snippet_name: load_snippet(*snippet_name.split('.')) for
+            snippet_name in all_snippet_names}
+
         super(DependencyChecker, self).__init__()
 
     def process_thing(self, thing, *args, **kwargs):
         output = thing
         entity = thing.entity
-        print 'DependencyChecker:', output
         if isinstance(thing, UpsertCommand):
             entity_type = entity.__class__.__name__
         else:
             # Add elif statements for dependencies on other commands
             return
-        entity_dependencies = self.dependency_config[entity_type]['upsert']  # Make this a parameter later
+        
+        # Make this a parameter later
+        entity_dependencies = self.dependency_config[entity_type]['upsert']
         for attribute in entity.__dict__.keys():
             attribute_dependencies = entity_dependencies.get(attribute, [])
             for action_dict in attribute_dependencies:
-                func = self.pipeline.snippet_dict[action_dict['snippet']]
+                func = self.pipeline.snippet_dict[action_dict['calculating_snippet']]
+                import pdb; pdb.set_trace()
+                ### Rewrite next few lines
                 new_entity = self.pipeline.alligator.entities_dict[
                     action_dict['entity']]()
                 new_entity.name = entity.name
@@ -75,4 +91,3 @@ if __name__ == '__main__':
                     updating_entity=updating_entity,
                     updating_attribute=updating_attribute)
     module = importlib.import_module('mean_age_snippet')
-    print d

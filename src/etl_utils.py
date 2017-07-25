@@ -32,6 +32,25 @@ class Message(object):
         self.metadata['time'] = datetime.datetime.now()
 
 
+def find_key_value(some_dict_outer, some_key):
+    """
+    """
+    
+    def inner(some_dict, results=[]):
+        if isinstance(some_dict, dict):
+            for key, value in some_dict.iteritems():
+                if key == some_key:
+                    results.append(value)
+                inner(value, results=results)
+        elif isinstance(some_dict, (list, set,)):
+            for item in some_dict:
+                inner(item, results)
+    
+    results = []
+    inner(some_dict_outer, results=results)
+    return results
+
+
 class JobQueue(Queue.Queue, object):
     """
     Subclass of `Queue.Queue` for connecting components and supporting
@@ -45,7 +64,6 @@ class JobQueue(Queue.Queue, object):
         super(JobQueue, self).__init__()
 
     def put(self, thing):
-        print self.item_hashes
         if thing is not None:
             wrapped = Message(thing)
             self.item_hashes.add(wrapped)

@@ -66,13 +66,16 @@ class Alligator(QueueableThreadable):
                 self.source_to_entity_dict[source_name].append(entity_name)
 
     def process_thing(self, message):
-        print message.payload
-        print message.origin.__dict__
         data_source_name = message.origin.name
         relevant_entities = self.source_to_entity_dict[data_source_name]
-        print 'Relevant entities:', relevant_entities
-        print 'Data source:      ', data_source_name
         for entity in relevant_entities:
+            snippets_dict = self.entities_configuration[entity]['sources'][data_source_name]
+            # Test whether this payload should trigger the creation of this entity
+            if 'test_snippet' in snippets_dict:
+                test_snippet_name = snippets_dict['test_snippet']
+                test_function = self.pipeline.snippet_dict[test_snippet_name]
+                if not test_function(message.payload):
+                    continue
             entity_attribute_dict = self.entities_configuration[entity][
                 'attributes']
             attribute_dict = {}

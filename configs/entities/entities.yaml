@@ -1,7 +1,7 @@
 Person:
   sources:
     test_json_file_source:
-      - transform: test_transform
+        transform: test_transform
         snippet: test_snippet
         test_snippet: person_test.person_test
   identifier: name
