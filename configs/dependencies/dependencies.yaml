@@ -5,3 +5,10 @@ Person:
         attribute: big_glasses
         identifier_function_snippet: utilities.identity
         calculating_snippet: big_glasses.some_function
+Transaction:
+  upsert:
+    number_of_widgets:
+      - entity: Person
+        attribute: total_widgets_purchased
+        identifier_function_snippet: utilities.person_from_transaction
+        calculating_snippet: aggregate_widgets.total_widgets_purchased

@@ -20,6 +20,13 @@ Transaction:
         - test_json_file_source:
             keypath: ['number_of_widgets']
             required: True
+    customer:
+      type: str
+      required: False
+      sources:
+        - test_json_file_source:
+            keypath: ['customer', 'name']
+            required: False
 
 Person:
   sources:
@@ -48,6 +55,13 @@ Person:
             required: True
         - some_other_fake_source:
             keypath: [not, a, real, key, path]
+            required: False
+    total_widgets_purchased:
+      type: int
+      required: False
+      sources:
+        - fake_source:
+            keypath: [not, really]
             required: False
     big_glasses:
       type: bool
