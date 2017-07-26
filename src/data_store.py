@@ -64,8 +64,6 @@ class MySQLDataStore(DataStore):
             [getattr(entity, attribute) for attribute in attribute_list])
 
         attribute_values_placeholder = ', '.join(['%s'] * len(attribute_values))
-        # We'll assume only one table for the moment
-        # import pdb; pdb.set_trace()
         column_list = []
         for attribute in attribute_list:
             table, column = self.entity_data[entity_type][attribute]
