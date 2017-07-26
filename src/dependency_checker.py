@@ -54,18 +54,26 @@ class DependencyChecker(QueueableThreadable):
             # Add elif statements for dependencies on other commands
             return
         
-        # Make this a parameter later
+        # Make `upsert` a parameter later
+        if entity_type not in self.dependency_config:
+            return output
+
         entity_dependencies = self.dependency_config[entity_type]['upsert']
         for attribute in entity.__dict__.keys():
             attribute_dependencies = entity_dependencies.get(attribute, [])
             for action_dict in attribute_dependencies:
-                func = self.pipeline.snippet_dict[action_dict['calculating_snippet']]
-                import pdb; pdb.set_trace()
-                ### Rewrite next few lines
+                calculating_func = self.pipeline.snippet_dict[
+                    action_dict['calculating_snippet']]
+                identifier_func = self.pipeline.snippet_dict[
+                    action_dict['identifier_function_snippet']]
                 new_entity = self.pipeline.alligator.entities_dict[
                     action_dict['entity']]()
-                new_entity.name = entity.name
-                setattr(new_entity, action_dict['attribute'], func(entity))
+                new_entity.name = identifier_func(entity)
+                setattr(
+                    new_entity,
+                    action_dict['attribute'],
+                    calculating_func(entity))
+
                 self.pipeline.logic_validator.input_queue.put(new_entity)
         return output
 

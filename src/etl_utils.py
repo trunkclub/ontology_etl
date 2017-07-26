@@ -64,6 +64,7 @@ class JobQueue(Queue.Queue, object):
         super(JobQueue, self).__init__()
 
     def put(self, thing):
+        # print 'JobQueue:', thing
         if thing is not None:
             wrapped = Message(thing)
             self.item_hashes.add(wrapped)
@@ -100,6 +101,7 @@ class Threadable(object):
             while self.input_queue.empty():
                 time.sleep(self.check_interval)
             thing = self.input_queue.get()
+            print 'thread_loop', thing.__dict__
             thing_result = self.process_thing(thing, *args, **kwargs)
             if isinstance(self, Queueable):
                 self.output_queue.put(thing_result)

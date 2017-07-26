@@ -1,2 +1,2 @@
 def identity(x):
-    return x
+    return x.name

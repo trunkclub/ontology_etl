@@ -1,3 +1,26 @@
+Transaction:
+  sources:
+    test_json_file_source:
+      transform: test_transform
+      snippet: test_snippet
+      test_snippet: transaction_test.transaction_test
+  identifier: uuid
+  attributes:
+    uuid:
+      type: str
+      required: True
+      sources:
+        - test_json_file_source:
+            keypath: ['transaction_id']
+            required: True
+    number_of_widgets:
+      type: int
+      required: True
+      sources:
+        - test_json_file_source:
+            keypath: ['number_of_widgets']
+            required: True
+
 Person:
   sources:
     test_json_file_source:

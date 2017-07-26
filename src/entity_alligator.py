@@ -47,7 +47,6 @@ class Alligator(QueueableThreadable):
             ENTITIES_DIR)  # Move this to __init__?
         for entity_class, entity_config in (
                 self.entities_configuration.iteritems()):
-            # Insert entity test here; `continue` if False
             self.entities_dict[entity_class] = type(
                 entity_class, (ontology.Entity,), {})
             self.entities_dict[entity_class].sources_dict = entity_config[
@@ -69,7 +68,8 @@ class Alligator(QueueableThreadable):
         data_source_name = message.origin.name
         relevant_entities = self.source_to_entity_dict[data_source_name]
         for entity in relevant_entities:
-            snippets_dict = self.entities_configuration[entity]['sources'][data_source_name]
+            snippets_dict = self.entities_configuration[
+                entity]['sources'][data_source_name]
             # Test whether this payload should trigger the creation of this entity
             if 'test_snippet' in snippets_dict:
                 test_snippet_name = snippets_dict['test_snippet']

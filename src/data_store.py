@@ -65,10 +65,10 @@ class MySQLDataStore(DataStore):
 
         attribute_values_placeholder = ', '.join(['%s'] * len(attribute_values))
         # We'll assume only one table for the moment
-        table = 'demographics'
+        # import pdb; pdb.set_trace()
         column_list = []
         for attribute in attribute_list:
-            _, column = self.entity_data[entity_type][attribute]
+            table, column = self.entity_data[entity_type][attribute]
             column_list.append(column)
         column_list_string = ', '.join(column_list)
         column_list_string = ''.join(['(', column_list_string, ')'])
@@ -84,6 +84,7 @@ class MySQLDataStore(DataStore):
                 column_list_string=column_list_string,
                 attribute_values_placeholder=attribute_values_placeholder,
                 set_clause=set_clause)
+        print query
         self.cursor.execute(query, attribute_values + attribute_values)
         self.commit()
 

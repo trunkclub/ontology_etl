@@ -10,3 +10,6 @@ mysql_test_store:
       age: [demographics, age]
       name: [demographics, first_name]
       big_glasses: [demographics, big_glasses]
+    Transaction:
+      uuid: [transactions, transaction_id]
+      number_of_widgets: [transactions, widgets_purchased]

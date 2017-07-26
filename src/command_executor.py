@@ -19,8 +19,9 @@ class CommandExecutor(QueueableThreadable):
             command = UpsertCommand(thing)
         else:
             command = thing
-        
         print 'CommandExecutor:', command
+        
         if isinstance(command, UpsertCommand):
+            # Add logic for including only the right data stores:
             for data_store in self.pipeline.data_store_dict.itervalues():
                 data_store.upsert(command.entity)

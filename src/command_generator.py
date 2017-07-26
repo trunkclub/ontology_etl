@@ -18,7 +18,7 @@ class CommandGenerator(QueueableThreadable):
         print 'in the CommandGenerator'
         if isinstance(thing, Entity):
             command = UpsertCommand(thing)
+            print 'made upsert command for:', thing.__dict__
         else:
             command = thing
-        
         return command 
